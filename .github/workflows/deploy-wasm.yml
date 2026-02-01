@@ -2,7 +2,7 @@ name: Deploy WASM
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
