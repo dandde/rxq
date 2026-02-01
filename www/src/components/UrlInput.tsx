@@ -32,7 +32,7 @@ export function UrlInput({ onFileLoaded, onError, disabled }: UrlInputProps) {
         const startTime = performance.now();
 
         try {
-            // Try direct fetch first
+            // 1. Try direct fetch first
             try {
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`Status ${res.status}`);
@@ -40,19 +40,38 @@ export function UrlInput({ onFileLoaded, onError, disabled }: UrlInputProps) {
 
                 const endTime = performance.now();
                 setFetchTime(endTime - startTime);
-                setFetchSize(text.length); // Approximation (chars ~= bytes for ASCII, close enough for UI)
+                setFetchSize(text.length);
 
                 const name = url.split('/').pop() || 'downloaded-file';
                 onFileLoaded(text, name);
                 return;
             } catch (directError) {
-                console.warn("Direct fetch failed, trying CORS proxy...", directError);
+                console.warn("Direct fetch failed, trying Local CORS proxy...", directError);
             }
 
-            // Fallback to local rxq-server proxy
-            // Uses window.location.origin to support whatever host/port we are on
-            const proxyUrl = `${window.location.origin}/api/proxy?url=${encodeURIComponent(url)}`;
-            const res = await fetch(proxyUrl);
+            // 2. Fallback to local rxq-server proxy (Best for Local Dev)
+            try {
+                // Uses window.location.origin to support whatever host/port we are on
+                const proxyUrl = `${window.location.origin}/api/proxy?url=${encodeURIComponent(url)}`;
+                const res = await fetch(proxyUrl);
+                if (!res.ok) throw new Error(`Status ${res.status}`);
+                const text = await res.text();
+
+                const endTime = performance.now();
+                setFetchTime(endTime - startTime);
+                setFetchSize(text.length);
+
+                onError("Note: Loaded via Local Proxy (User-Agent spoofed)");
+                const name = url.split('/').pop() || 'downloaded-file';
+                onFileLoaded(text, name);
+                return;
+            } catch (localProxyError) {
+                console.warn("Local proxy fetch failed, trying Public CORS proxy...", localProxyError);
+            }
+
+            // 3. Fallback to Public CORS Proxy (Best for Static Deployment / GitHub Pages)
+            const publicProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const res = await fetch(publicProxyUrl);
             if (!res.ok) throw new Error(`Proxy Status ${res.status}`);
             const text = await res.text();
 
@@ -60,7 +79,8 @@ export function UrlInput({ onFileLoaded, onError, disabled }: UrlInputProps) {
             setFetchTime(endTime - startTime);
             setFetchSize(text.length);
 
-            onError("Note: Loaded via Server Proxy (User-Agent spoofed)");
+            // Informative warning for public proxy usage
+            onError("Note: Loaded via Public Proxy (allorigins.win)");
             const name = url.split('/').pop() || 'downloaded-file';
             onFileLoaded(text, name);
 
