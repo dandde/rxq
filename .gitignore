@@ -7,3 +7,18 @@ benchmark_results.md
 large_test.xml
 /assets
 /rxq_design
+
+# Node.js
+node_modules/
+npm-debug.log
+
+# Web App Build
+www/dist/
+www/.vite/
+
+# WASM
+rxq-wasm/pkg/
+
+# Editors
+.vscode/
+.idea/

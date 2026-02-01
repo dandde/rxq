@@ -28,7 +28,19 @@ jobs:
 
       - name: Build WASM
         working-directory: rxq-wasm
-        run: wasm-pack build --target web --out-dir ../www/wasm --release
+        run: wasm-pack build --target web --release
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Build Web App
+        working-directory: www
+        run: |
+          npm install
+          npm install ../rxq-wasm/pkg
+          npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
@@ -36,7 +48,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: 'www'
+          path: 'www/dist'
 
       - name: Deploy to GitHub Pages
         id: deployment

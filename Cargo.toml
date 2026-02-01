@@ -1,5 +1,5 @@
 [workspace]
-members = ["rxq-core", "rxq-cli", "rxq-wasm"]
+members = ["rxq-core", "rxq-cli", "rxq-wasm", "rxq-server"]
 resolver = "2"
 
 [workspace.package]
