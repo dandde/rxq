@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rxq WASM Demo</title>
+</head>
+<body>
+    <h1>rxq WASM Demo</h1>
+    <textarea id="input" rows="10" cols="80"><root><child>Test</child></root></textarea>
+    <br>
+    <button id="formatBtn">Format XML</button>
+    <button id="toJsonBtn">To JSON</button>
+    <pre id="output"></pre>
+
+    <script type="module">
+        import init, { RxqDocument } from './wasm/rxq_wasm.js';
+
+        async function run() {
+            await init();
+            
+            const input = document.getElementById('input');
+            const output = document.getElementById('output');
+            
+            document.getElementById('formatBtn').addEventListener('click', () => {
+                const doc = new RxqDocument(input.value, 'xml');
+                try {
+                    output.textContent = doc.format({ indent: 2, color: false });
+                } catch (e) {
+                    output.textContent = "Error: " + e;
+                } finally {
+                    doc.free();
+                }
+            });
+
+            document.getElementById('toJsonBtn').addEventListener('click', () => {
+                const doc = new RxqDocument(input.value, 'xml');
+                try {
+                    const json = doc.toJson();
+                    output.textContent = JSON.stringify(json, null, 2);
+                } catch (e) {
+                    output.textContent = "Error: " + e;
+                } finally {
+                    doc.free();
+                }
+            });
+        }
+        
+        run();
+    </script>
+</body>
+</html>

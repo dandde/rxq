@@ -1,0 +1,22 @@
+[package]
+name = "rxq-wasm"
+version = "0.1.0"
+edition = "2021"
+authors = ["rxq contributors"]
+license = "MIT"
+repository = "https://github.com/dandde/rxq"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+console_error_panic_hook = "0.1"
+rxq-core = { path = "../rxq-core", features = ["json-output"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
