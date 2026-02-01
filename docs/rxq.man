@@ -83,11 +83,6 @@ Formats the file in place.
 .RS 4
 Enables compact JSON output (no whitespace).
 .RE
-.PP
-\fB--depth\fR | \fB-d\fR \fIint\fR
-.RS 4
-Sets maximum nesting depth for JSON output (default -1 for unlimited).
-.RE
 .SH EXAMPLES
 .PP
 Format an XML file and highlight the syntax:

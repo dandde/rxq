@@ -6,12 +6,12 @@ A high-performance XML/HTML beautifier and content extractor, written in Rust.
 
 ## Features
 
-- **Blazing Fast**: Built with Rust and zero-copy parsing techniques for sub-microsecond performance.
+- **Rust**: Built with Rust and zero-copy parsing for performance.
 - **Versatile Formatting**:
     - **XML**: Syntax highlighting, auto-indentation, and inline text preservation.
     - **HTML**: Graceful handling of HTML5 documents.
     - **JSON**: Convert XML/HTML structure to JSON instantly (~38x faster than existing tools).
-- **Powerful Querying**:
+- **Querying**:
     - **XPath**: Extract data using standard XPath syntax (e.g., `//user/name`).
     - **CSS Selectors**: Query elements using familiar CSS selectors (e.g., `div.content`).
 - **Compatibility**: Supports standard flags for colorization, indentation control, and compact output.
