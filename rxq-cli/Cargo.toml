@@ -1,0 +1,23 @@
+[package]
+name = "rxq-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "rxq"
+path = "src/main.rs"
+
+[dependencies]
+rxq-core = { path = "../rxq-core", features = ["json-output"] }
+clap.workspace = true
+anyhow.workspace = true
+atty.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+assert_cmd.workspace = true
+predicates.workspace = true
+tempfile.workspace = true

@@ -1,0 +1,28 @@
+[package]
+name = "rxq-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+tl.workspace = true
+thiserror.workspace = true
+atty.workspace = true
+serde = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+
+[dev-dependencies]
+criterion.workspace = true
+
+[features]
+default = []
+json-output = ["serde", "serde_json"]
+
+[[bench]]
+name = "parsing"
+harness = false
+
+[[bench]]
+name = "querying"
+harness = false
