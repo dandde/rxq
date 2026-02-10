@@ -276,28 +276,24 @@ fn find_attribute_value_impl<'a, 'input>(
     path: &[String],
     attr: &str,
     results: &mut Vec<NodeRef<'a, 'input>>,
-) -> bool {
+) {
     if path.is_empty() {
         // We're at the target node, create a pseudo-node with the attribute value
         if node.attr(attr).is_some() {
             // For attribute values, we return the node itself
             // The caller will extract the attribute value
             results.push(node);
-            return true;
         }
-        return false;
+        return;
     }
 
     // Match the first path component
     let target = &path[0];
-    let mut results = Vec::new();
     for child in node.children() {
         if child.tag_name().as_deref() == Some(target.as_str()) {
-            results.extend(find_attribute_value(vdom, child, &path[1..], attr));
+            find_attribute_value_impl(vdom, child, &path[1..], attr, results);
         }
     }
-
-    results
 }
 
 /// Find nodes by absolute path
@@ -323,11 +319,9 @@ fn find_by_absolute_path_impl<'a, 'input>(
     }
 
     let target = &path[0];
-    let mut results = Vec::new();
     for child in node.children() {
         if child.tag_name().as_deref() == Some(target.as_str()) {
             find_by_absolute_path_impl(vdom, child, &path[1..], results);
-            return;
         }
     }
 }
