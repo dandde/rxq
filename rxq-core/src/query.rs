@@ -97,11 +97,21 @@ fn execute_xpath_like<'doc, 'input>(
         }
         XPathPattern::AttributeValue(path, attr) => {
             // /path/to/tag/@attr pattern
-            find_attribute_value(vdom, doc.root(), &path, &attr)
+            let root = doc.root();
+            if !path.is_empty() && root.tag_name().as_deref() == Some(path[0].as_str()) {
+                find_attribute_value(vdom, root, &path[1..], &attr)
+            } else {
+                vec![]
+            }
         }
         XPathPattern::AbsolutePath(path) => {
             // /root/child/grandchild pattern
-            find_by_absolute_path(vdom, doc.root(), &path)
+            let root = doc.root();
+            if !path.is_empty() && root.tag_name().as_deref() == Some(path[0].as_str()) {
+                find_by_absolute_path(vdom, root, &path[1..])
+            } else {
+                vec![]
+            }
         }
     };
 
@@ -251,16 +261,14 @@ fn find_attribute_value<'a, 'input>(
 
     // Match the first path component
     let target = &path[0];
+    let mut results = Vec::new();
     for child in node.children() {
         if child.tag_name().as_deref() == Some(target.as_str()) {
-            let results = find_attribute_value(vdom, child, &path[1..], attr);
-            if !results.is_empty() {
-                return results;
-            }
+            results.extend(find_attribute_value(vdom, child, &path[1..], attr));
         }
     }
 
-    vec![]
+    results
 }
 
 /// Find nodes by absolute path
@@ -274,13 +282,14 @@ fn find_by_absolute_path<'a, 'input>(
     }
 
     let target = &path[0];
+    let mut results = Vec::new();
     for child in node.children() {
         if child.tag_name().as_deref() == Some(target.as_str()) {
-            return find_by_absolute_path(vdom, child, &path[1..]);
+            results.extend(find_by_absolute_path(vdom, child, &path[1..]));
         }
     }
 
-    vec![]
+    results
 }
 
 #[cfg(test)]

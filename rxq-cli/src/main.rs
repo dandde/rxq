@@ -91,6 +91,10 @@ struct Cli {
     /// Maximum nesting depth for JSON output
     #[arg(short = 'd', long = "depth", default_value = "-1")]
     pub depth: i32,
+
+    /// Count the number of results
+    #[arg(short = 'C', long = "count")]
+    pub count: bool,
 }
 
 fn validate_indent(s: &str) -> Result<u8, String> {
@@ -147,9 +151,13 @@ fn main() -> Result<()> {
 
         let results = execute_query(&doc, query, &query_opts).context("Query execution failed")?;
 
-        // Use generic writer (Box<dyn Write> implements Write)
-        format_query_results(results, &mut output, &query_opts, &format_opts)
-            .context("Failed to format query results")?;
+        if cli.count {
+            writeln!(output, "{}", results.count())?;
+        } else {
+            // Use generic writer (Box<dyn Write> implements Write)
+            format_query_results(results, &mut output, &query_opts, &format_opts)
+                .context("Failed to format query results")?;
+        }
     } else {
         // Format entire document
         let formatter = if cli.json {
