@@ -249,26 +249,35 @@ fn find_attribute_value<'a, 'input>(
     path: &[String],
     attr: &str,
 ) -> Vec<NodeRef<'a, 'input>> {
+    let mut results = Vec::new();
+    find_attribute_value_impl(vdom, node, path, attr, &mut results);
+    results
+}
+
+fn find_attribute_value_impl<'a, 'input>(
+    vdom: &'a tl::VDom<'input>,
+    node: NodeRef<'a, 'input>,
+    path: &[String],
+    attr: &str,
+    results: &mut Vec<NodeRef<'a, 'input>>,
+) {
     if path.is_empty() {
         // We're at the target node, create a pseudo-node with the attribute value
         if let Some(_attr_val) = node.attr(attr) {
             // For attribute values, we return the node itself
             // The caller will extract the attribute value
-            return vec![node];
+            results.push(node);
         }
-        return vec![];
+        return;
     }
 
     // Match the first path component
     let target = &path[0];
-    let mut results = Vec::new();
     for child in node.children() {
         if child.tag_name().as_deref() == Some(target.as_str()) {
-            results.extend(find_attribute_value(vdom, child, &path[1..], attr));
+            find_attribute_value_impl(vdom, child, &path[1..], attr, results);
         }
     }
-
-    results
 }
 
 /// Find nodes by absolute path
@@ -282,10 +291,9 @@ fn find_by_absolute_path<'a, 'input>(
     }
 
     let target = &path[0];
-    let mut results = Vec::new();
     for child in node.children() {
         if child.tag_name().as_deref() == Some(target.as_str()) {
-            results.extend(find_by_absolute_path(vdom, child, &path[1..]));
+            find_by_absolute_path_impl(vdom, child, &path[1..], results);
         }
     }
 
