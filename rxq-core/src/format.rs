@@ -285,15 +285,8 @@ pub fn format_query_results<'doc, 'input: 'doc, W: Write>(
     results: impl Iterator<Item = NodeRef<'doc, 'input>>,
     writer: &mut W,
     options: &QueryOptions,
-    format_opts: &FormatOptions,
+    _format_opts: &FormatOptions,
 ) -> Result<(), FormatError> {
-    let _formatter = XmlFormatter;
-    let _colors = if format_opts.use_colors() {
-        ColorScheme::default()
-    } else {
-        ColorScheme::none()
-    };
-
     for node in results {
         if options.with_tags {
             // Format with full markup
