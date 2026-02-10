@@ -1,7 +1,8 @@
-import { Link, Loader2 } from 'lucide-react';
+import { Link, Loader2, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
+import { Label } from './ui/Label';
 
 interface UrlInputProps {
     onFileLoaded: (content: string, name: string) => void;
@@ -20,6 +21,7 @@ function formatSize(bytes: number): string {
 export function UrlInput({ onFileLoaded, onError, disabled }: UrlInputProps) {
     const [url, setUrl] = useState('');
     const [loading, setLoading] = useState(false);
+    const [usePublicProxy, setUsePublicProxy] = useState(false);
     const [fetchTime, setFetchTime] = useState<number | null>(null);
     const [fetchSize, setFetchSize] = useState<number | null>(null);
 
@@ -66,23 +68,28 @@ export function UrlInput({ onFileLoaded, onError, disabled }: UrlInputProps) {
                 onFileLoaded(text, name);
                 return;
             } catch (localProxyError) {
+                if (!usePublicProxy) {
+                    throw new Error("Direct and Local Proxy failed. Enable 'Public Proxy' fallback to try third-party fetch.");
+                }
                 console.warn("Local proxy fetch failed, trying Public CORS proxy...", localProxyError);
             }
 
             // 3. Fallback to Public CORS Proxy (Best for Static Deployment / GitHub Pages)
-            const publicProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            const res = await fetch(publicProxyUrl);
-            if (!res.ok) throw new Error(`Proxy Status ${res.status}`);
-            const text = await res.text();
+            if (usePublicProxy) {
+                const publicProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                const res = await fetch(publicProxyUrl);
+                if (!res.ok) throw new Error(`Proxy Status ${res.status}`);
+                const text = await res.text();
 
-            const endTime = performance.now();
-            setFetchTime(endTime - startTime);
-            setFetchSize(text.length);
+                const endTime = performance.now();
+                setFetchTime(endTime - startTime);
+                setFetchSize(text.length);
 
-            // Informative warning for public proxy usage
-            onError("Note: Loaded via Public Proxy (allorigins.win)");
-            const name = url.split('/').pop() || 'downloaded-file';
-            onFileLoaded(text, name);
+                // Informative warning for public proxy usage
+                onError("Note: Loaded via Public Proxy (allorigins.win)");
+                const name = url.split('/').pop() || 'downloaded-file';
+                onFileLoaded(text, name);
+            }
 
         } catch (e: any) {
             onError(`Failed to load URL: ${e.message}`);
@@ -112,6 +119,23 @@ export function UrlInput({ onFileLoaded, onError, disabled }: UrlInputProps) {
                 <Button onClick={handleFetch} disabled={disabled || loading || !url}>
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Fetch"}
                 </Button>
+            </div>
+            <div className="flex items-center gap-2 px-1 py-1">
+                <input
+                    type="checkbox"
+                    id="usePublicProxy"
+                    checked={usePublicProxy}
+                    onChange={(e) => setUsePublicProxy(e.target.checked)}
+                    className="h-4 w-4 rounded border-[hsl(var(--input))] bg-transparent text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
+                    disabled={loading}
+                />
+                <Label
+                    htmlFor="usePublicProxy"
+                    className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 cursor-pointer select-none"
+                >
+                    <ShieldAlert className="h-3 w-3 text-amber-500" />
+                    Use Public CORS Proxy (leaks URL to allorigins.win)
+                </Label>
             </div>
             {(fetchTime !== null || fetchSize !== null) && (
                 <div className="text-xs text-muted-foreground text-right px-1 flex justify-end gap-3">
