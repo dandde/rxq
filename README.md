@@ -18,6 +18,11 @@ A high-performance XML/HTML beautifier and content extractor, written in Rust.
 
 ## Usage
 
+```bash
+# Example 
+cargo run --example zero_copy_demo -p rxq-core
+```
+
 ### Basic Formatting
 
 Format an XML file from standard input or file:

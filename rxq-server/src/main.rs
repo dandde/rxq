@@ -1,10 +1,4 @@
-use axum::{
-    extract::Query,
-    http::{StatusCode, HeaderMap},
-    response::IntoResponse,
-    routing::get,
-    Json, Router,
-};
+use axum::{extract::Query, http::StatusCode, response::IntoResponse, routing::get, Router};
 use serde::Deserialize;
 use std::net::SocketAddr;
 use tower_http::{
@@ -59,17 +53,35 @@ async fn proxy_handler(Query(params): Query<ProxyParams>) -> impl IntoResponse {
 
     let client = match client {
         Ok(c) => c,
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to create client: {}", e)).into_response(),
+        Err(e) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to create client: {}", e),
+            )
+                .into_response()
+        }
     };
 
     match client.get(&url).send().await {
         Ok(response) => {
             let status = response.status();
             match response.text().await {
-                Ok(text) => (StatusCode::from_u16(status.as_u16()).unwrap_or(StatusCode::OK), text).into_response(),
-                Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to read body: {}", e)).into_response(),
+                Ok(text) => (
+                    StatusCode::from_u16(status.as_u16()).unwrap_or(StatusCode::OK),
+                    text,
+                )
+                    .into_response(),
+                Err(e) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Failed to read body: {}", e),
+                )
+                    .into_response(),
             }
         }
-        Err(e) => (StatusCode::BAD_GATEWAY, format!("Failed to fetch URL: {}", e)).into_response(),
+        Err(e) => (
+            StatusCode::BAD_GATEWAY,
+            format!("Failed to fetch URL: {}", e),
+        )
+            .into_response(),
     }
 }
