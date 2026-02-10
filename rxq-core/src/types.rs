@@ -288,6 +288,45 @@ mod tests {
     fn test_auto_detect_html() {
         let html = "<!DOCTYPE html><html><body>test</body></html>";
         assert_eq!(Document::detect_type(html), DocumentType::Html);
+
+        // Case insensitivity
+        assert_eq!(
+            Document::detect_type("<!doctype html>"),
+            DocumentType::Html
+        );
+        assert_eq!(
+            Document::detect_type("<HTML><BODY></BODY></HTML>"),
+            DocumentType::Html
+        );
+
+        // Leading whitespace
+        assert_eq!(
+            Document::detect_type("   <html></html>"),
+            DocumentType::Html
+        );
+    }
+
+    #[test]
+    fn test_auto_detect_json() {
+        assert_eq!(Document::detect_type("{}"), DocumentType::Json);
+        assert_eq!(
+            Document::detect_type("  {\"key\": \"value\"}"),
+            DocumentType::Json
+        );
+        assert_eq!(Document::detect_type("[]"), DocumentType::Json);
+        assert_eq!(Document::detect_type("\n [1, 2, 3]"), DocumentType::Json);
+    }
+
+    #[test]
+    fn test_auto_detect_xml() {
+        assert_eq!(Document::detect_type("<root></root>"), DocumentType::Xml);
+        assert_eq!(
+            Document::detect_type("<?xml version=\"1.0\"?><root></root>"),
+            DocumentType::Xml
+        );
+        assert_eq!(Document::detect_type("  <root/>"), DocumentType::Xml);
+        // Default case is XML
+        assert_eq!(Document::detect_type("just some text"), DocumentType::Xml);
     }
 
     #[test]
